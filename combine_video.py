@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Combine the lip-synced face video back into the original video.
+Includes color correction to maintain consistent appearance.
 """
 
 import argparse
@@ -19,7 +20,52 @@ def get_video_properties(video_path):
     cap.release()
     return fps, width, height, total_frames
 
-def combine_videos(original_video, face_video, output_video, audio_path=None, face_coordinates=None):
+def color_correct_image(source, target):
+    """Apply color correction to make source match target's color profile."""
+    # Convert images to LAB color space (better for color correction)
+    source_lab = cv2.cvtColor(source, cv2.COLOR_BGR2LAB)
+    target_lab = cv2.cvtColor(target, cv2.COLOR_BGR2LAB)
+    
+    # Calculate the mean and std for each channel in LAB
+    source_mean, source_std = cv2.meanStdDev(source_lab)
+    target_mean, target_std = cv2.meanStdDev(target_lab)
+    
+    # Adjust each channel
+    corrected_lab = np.copy(source_lab).astype(np.float32)
+    for i in range(3):  # L, A, B channels
+        if source_std[i] > 0:
+            corrected_lab[:,:,i] = (corrected_lab[:,:,i] - source_mean[i]) * (target_std[i] / source_std[i]) + target_mean[i]
+    
+    # Clip values to valid range
+    corrected_lab = np.clip(corrected_lab, 0, 255).astype(np.uint8)
+    
+    # Convert back to BGR
+    corrected = cv2.cvtColor(corrected_lab, cv2.COLOR_LAB2BGR)
+    return corrected
+
+def blend_edges(face, target, blend_width=5):
+    """Blend the edges of the face to avoid hard borders."""
+    mask = np.ones_like(face, dtype=np.float32)
+    h, w = face.shape[:2]
+    
+    # Create a gradient along the edges
+    for i in range(blend_width):
+        alpha = i / blend_width
+        # Top edge
+        mask[i, :] = alpha
+        # Bottom edge
+        mask[h-i-1, :] = alpha
+        # Left edge
+        mask[:, i] = alpha
+        # Right edge
+        mask[:, w-i-1] = alpha
+    
+    # Apply the mask
+    blended = face.astype(np.float32) * mask + target.astype(np.float32) * (1 - mask)
+    return blended.astype(np.uint8)
+
+def combine_videos(original_video, face_video, output_video, audio_path=None, face_coordinates=None, 
+                   apply_color_correction=True, blend_edges_width=5):
     """
     Combine the lip-synced face region back into the original video.
     
@@ -29,6 +75,8 @@ def combine_videos(original_video, face_video, output_video, audio_path=None, fa
         output_video: Path for the output combined video
         audio_path: Path to the audio file to use (if None, uses original video audio)
         face_coordinates: Path to file containing face coordinates or a tuple of (x, y, w, h)
+        apply_color_correction: Whether to apply color correction
+        blend_edges_width: Width in pixels for edge blending (0 to disable)
     """
     # Get properties of both videos
     orig_fps, orig_width, orig_height, orig_frames = get_video_properties(original_video)
@@ -135,6 +183,9 @@ def combine_videos(original_video, face_video, output_video, audio_path=None, fa
     # Get face region coordinates
     x, y, w, h = face_region
     
+    # Initialize color transfer reference
+    color_reference = None
+    
     # Process each frame
     frame_count = min(orig_frames, face_frames)
     
@@ -151,8 +202,22 @@ def combine_videos(original_video, face_video, output_video, audio_path=None, fa
         if resize_required:
             face_frame = cv2.resize(face_frame, (w, h))
         
-        # Overlay face frame onto original frame
-        original_frame[y:y+h, x:x+w] = face_frame
+        if apply_color_correction:
+            # Extract the corresponding region from the original frame to use as reference
+            original_face_region = original_frame[y:y+h, x:x+w]
+            
+            # Perform color correction to match original video colors
+            corrected_face = color_correct_image(face_frame, original_face_region)
+            
+            # If edge blending is enabled
+            if blend_edges_width > 0:
+                corrected_face = blend_edges(corrected_face, original_face_region, blend_edges_width)
+                
+            # Replace face region with color-corrected version
+            original_frame[y:y+h, x:x+w] = corrected_face
+        else:
+            # Direct replacement without color correction
+            original_frame[y:y+h, x:x+w] = face_frame
         
         # Write to output video
         out.write(original_frame)
@@ -198,6 +263,8 @@ def main():
     parser.add_argument('--face_coordinates', help='Path to face coordinates file')
     parser.add_argument('--face_region', help='Face region coordinates (x,y,width,height) as a string', type=str)
     parser.add_argument('--audio', help='Path to audio file to use for the output video')
+    parser.add_argument('--no_color_correction', action='store_true', help='Disable color correction')
+    parser.add_argument('--blend_width', type=int, default=5, help='Width of edge blending in pixels (0 to disable)')
     
     args = parser.parse_args()
     
@@ -219,7 +286,9 @@ def main():
             args.face_video,
             args.output_video,
             args.audio,
-            args.face_coordinates if args.face_coordinates else face_region
+            args.face_coordinates if args.face_coordinates else face_region,
+            not args.no_color_correction,
+            args.blend_width
         )
         return 0 if success else 1
     except Exception as e:

@@ -67,7 +67,7 @@ The workflow consists of these sequential steps:
 4. **Sync Video**: `sync_video.py` - Adjust video timing to match German audio (creates `translated_${VIDEO_NAME}.mp4`)
 5. **Extract Face**: `extract_face.py` - Isolate face region from video
 6. **Lip Sync**: `lip_sync.py` - Synchronize lip movements with German audio
-7. **Combine Video**: `combine_video.py` - Merge lip-synced face into full video (creates `final_${VIDEO_NAME}.mp4`)
+7. **Combine Video**: `combine_video.py` - Merge lip-synced face into full video with color correction (creates `final_${VIDEO_NAME}.mp4`)
 
 ### Custom Usage
 
@@ -81,7 +81,20 @@ python generate_audio.py output/original_audio.wav output/translated_subtitles.s
 python sync_video.py input_video.mp4 output/translated_audio.wav output/translated_audio_timings.json output/translated_video.mp4
 python extract_face.py output/translated_video.mp4 output/face_video.mp4
 python lip_sync.py output/face_video.mp4 output/translated_audio.wav output/lip_synced_face.mp4
-python combine_video.py output/translated_video.mp4 output/lip_synced_face.mp4 output/final_video.mp4 --audio output/translated_audio.wav
+python combine_video.py output/translated_video.mp4 output/lip_synced_face.mp4 output/final_video.mp4 --audio output/translated_audio.wav --blend_width 5
+```
+
+### Color Correction Options
+
+The final combination step includes color correction to ensure the face matches the original video's color profile:
+
+```bash
+# Combine video with different color correction settings
+python combine_video.py input_video.mp4 face_video.mp4 output_video.mp4 [options]
+
+# Options:
+#  --no_color_correction    Disable color correction (if you prefer the original colors)
+#  --blend_width N          Width of edge blending in pixels (default: 5, 0 to disable)
 ```
 
 ## Output Files
