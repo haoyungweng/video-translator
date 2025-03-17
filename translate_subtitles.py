@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Translate SRT file from English to German using the srt library and deep_translator.
 """

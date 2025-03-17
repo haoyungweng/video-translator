@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Smart video synchronization that works with a continuous audio file and timing data.
 This approach creates a more natural flow by avoiding segment cuts.

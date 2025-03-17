@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Combine the lip-synced face video back into the original video.
 Includes color correction to maintain consistent appearance.

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Extract just the face region from a video to create a smaller video for lip syncing.
 """

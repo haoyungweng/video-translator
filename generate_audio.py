@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Generate German audio from translated SRT file using XTTS-v2 for voice cloning.
 This improved version creates individual audio segments that are concatenated

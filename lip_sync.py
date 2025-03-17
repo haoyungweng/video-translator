@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Lip syncing script using Wav2Lip.
 """
@@ -135,7 +134,8 @@ def run_lip_sync(face_video, audio_path, output_path):
             "--outfile", "temp_output.mp4",
             "--wav2lip_batch_size", "4",
             "--face_det_batch_size", "1",
-            "--nosmooth"  # Disable smoothing for better results
+            "--pads", "0", "50", "0", "0",
+            "--nosmooth"
         ]
         
         print("Running Wav2Lip...")
