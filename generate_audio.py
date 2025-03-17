@@ -29,7 +29,7 @@ torch.load = patched_torch_load
 os.environ["TORCH_LOAD_LEGACY_MODULES"] = "1"
 
 def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_segments", 
-                         timing_file=None, use_gpu=False, generate_timings=True):
+                         timing_file=None, generate_timings=True):
     """Generate German audio using XTTS-v2 voice cloning and create a continuous audio file."""
     try:
         # Import TTS
@@ -41,19 +41,19 @@ def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_se
         # Set up the TTS system
         print("Loading XTTS-v2 model (this may take a minute)...")
         
-        # Determine GPU usage
+        # Determine GPU availability automatically
+        use_gpu = torch.cuda.is_available()
         use_mps = not use_gpu and torch.backends.mps.is_available()
-        if use_mps:
-            print("Using MPS (Apple Silicon)")
-            device = torch.device("mps")
-            # This is needed because XTTS doesn't directly support MPS
-            use_gpu = False
-        elif use_gpu and torch.cuda.is_available():
-            print("Using CUDA GPU")
+        
+        if use_gpu:
+            print("CUDA GPU detected - using for faster processing")
             device = torch.device("cuda")
-            use_gpu = True
+        elif use_mps:
+            print("Apple Silicon (MPS) detected - using CPU since XTTS doesn't directly support MPS")
+            device = torch.device("cpu")
+            use_gpu = False
         else:
-            print("Using CPU")
+            print("No GPU detected - using CPU")
             device = torch.device("cpu")
             use_gpu = False
         
@@ -67,7 +67,8 @@ def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_se
                 pass
         
         # Load the XTTS model using the API
-        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=use_gpu)
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+        tts.to(device)
         
         # Parse SRT file
         print("Parsing SRT file...")
@@ -161,7 +162,7 @@ def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_se
         
         # Try again after installation
         from TTS.api import TTS
-        return generate_german_audio(srt_path, speaker_wav, output_path, temp_dir, timing_file, use_gpu)
+        return generate_german_audio(srt_path, speaker_wav, output_path, temp_dir, timing_file)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate German audio from SRT using XTTS-v2 voice cloning')
@@ -170,7 +171,6 @@ def main():
     parser.add_argument('output_audio', help='Path for the output German audio file')
     parser.add_argument('--timing_file', help='Path for the timing JSON file')
     parser.add_argument('--temp_dir', default='audio_segments', help='Directory for temporary audio segments')
-    parser.add_argument('--gpu', action='store_true', help='Use GPU for generation if available')
     parser.add_argument('--no-timings', action='store_true', help="Don't generate timing JSON file")
     
     args = parser.parse_args()
@@ -183,7 +183,6 @@ def main():
             args.output_audio, 
             args.temp_dir,
             args.timing_file,
-            args.gpu,
             not args.no_timings
         )
         

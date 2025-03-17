@@ -10,6 +10,44 @@ import subprocess
 import tempfile
 import shutil
 
+def verify_wav2lip_installation():
+    """Verify Wav2Lip installation and model checkpoint."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    wav2lip_dir = os.path.join(script_dir, "Wav2Lip")
+    model_path = os.path.join(wav2lip_dir, "checkpoints", "wav2lip_gan.pth")
+    inference_path = os.path.join(wav2lip_dir, "inference.py")
+    
+    errors = []
+    
+    # Check if Wav2Lip directory exists
+    if not os.path.exists(wav2lip_dir):
+        errors.append(f"Wav2Lip directory not found at {wav2lip_dir}")
+    
+    # Check if inference.py exists
+    if not os.path.exists(inference_path):
+        errors.append(f"Wav2Lip inference script not found at {inference_path}")
+    
+    # Check if checkpoints directory exists
+    checkpoints_dir = os.path.join(wav2lip_dir, "checkpoints")
+    if not os.path.exists(checkpoints_dir):
+        os.makedirs(checkpoints_dir, exist_ok=True)
+        errors.append(f"Created missing checkpoints directory at {checkpoints_dir}")
+    
+    # Check if model exists
+    if not os.path.exists(model_path):
+        errors.append(f"Wav2Lip model checkpoint not found at {model_path}")
+    
+    # Return errors if any
+    if errors:
+        error_message = "\n".join(errors)
+        error_message += "\n\nPlease follow these steps to fix the issues:"
+        error_message += "\n1. Run: git clone https://github.com/Rudrabha/Wav2Lip.git"
+        error_message += "\n2. Download the model from: https://iiitaphyd-my.sharepoint.com/personal/radrabha_m_research_iiit_ac_in/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fradrabha%5Fm%5Fresearch%5Fiiit%5Fac%5Fin%2FDocuments%2FWav2Lip%5FModels%2Fwav2lip%5Fgan%2Epth"
+        error_message += f"\n3. Place the downloaded model at: {model_path}"
+        return False, error_message
+    
+    return True, "Wav2Lip installation verified successfully."
+
 def extract_audio(video_path, audio_path):
     """Extract audio from video using ffmpeg."""
     cmd = [
@@ -26,6 +64,11 @@ def fix_audio_py_file():
     # Get the absolute path to the Wav2Lip directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     audio_py_path = os.path.join(script_dir, "Wav2Lip/audio.py")
+    
+    # Check if file exists
+    if not os.path.exists(audio_py_path):
+        print(f"Warning: audio.py file not found at {audio_py_path}")
+        return False
     
     # Read the file
     with open(audio_py_path, 'r') as f:
@@ -46,28 +89,21 @@ def fix_audio_py_file():
             f.write(content)
         
         print("Fixed audio.py file successfully")
+        return True
+    
+    return True  # No fix needed
 
 def run_lip_sync(face_video, audio_path, output_path):
     """Run Wav2Lip on a face-only video."""
+    # Verify Wav2Lip installation first
+    installation_ok, message = verify_wav2lip_installation()
+    if not installation_ok:
+        print(message)
+        return False
+    
     # Get the absolute path to the script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     wav2lip_dir = os.path.join(script_dir, "Wav2Lip")
-    
-    # Verify Wav2Lip directory exists
-    if not os.path.exists(wav2lip_dir):
-        print(f"Error: Wav2Lip directory not found at {wav2lip_dir}!")
-        print("Please run: git clone https://github.com/Rudrabha/Wav2Lip.git")
-        return False
-    
-    # Verify model checkpoint exists
-    checkpoints_dir = os.path.join(wav2lip_dir, "checkpoints")
-    model_path = os.path.join(checkpoints_dir, "wav2lip_gan.pth")
-    if not os.path.exists(model_path):
-        print(f"Error: Wav2Lip model checkpoint not found at {model_path}")
-        print("Please download it from OneDrive:")
-        print("https://iiitaphyd-my.sharepoint.com/personal/radrabha_m_research_iiit_ac_in/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fradrabha%5Fm%5Fresearch%5Fiiit%5Fac%5Fin%2FDocuments%2FWav2Lip%5FModels%2Fwav2lip%5Fgan%2Epth")
-        print(f"Then place it in: {model_path}")
-        return False
     
     # Use absolute paths for files
     wav2lip_face = os.path.join(wav2lip_dir, "temp_face.mp4")
@@ -145,6 +181,12 @@ def main():
     args = parser.parse_args()
     
     try:
+        # Verify installation first
+        installation_ok, message = verify_wav2lip_installation()
+        if not installation_ok:
+            print(message)
+            return 1
+            
         # Run lip sync
         success = run_lip_sync(args.face_video, args.audio_file, args.output_video)
         

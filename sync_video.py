@@ -120,7 +120,7 @@ def add_audio_to_video(video_path, audio_path, output_path):
     subprocess.run(cmd)
     return output_path
 
-def smart_video_sync(video_path, audio_path, timing_path, output_path, max_slowdown=2.0):
+def smart_video_sync(video_path, audio_path, timing_path, output_path):
     """
     Synchronize video with translated audio using timing data.
     This approach works with a continuous audio file and produces smoother results.
@@ -145,11 +145,8 @@ def smart_video_sync(video_path, audio_path, timing_path, output_path, max_slowd
             # Get audio timing from the new continuous audio
             audio_duration = segment["audio_duration"]
             
-            # Calculate how much to slow down the video
+            # Calculate how much to slow down the video to match the audio duration
             duration_factor = audio_duration / subtitle_duration if subtitle_duration > 0 else 1.0
-            
-            # Cap the slowdown factor
-            duration_factor = min(duration_factor, max_slowdown)
             
             # Extract the video segment
             video_segment_path = os.path.join(temp_dir, f"video_{i:04d}.mp4")
@@ -196,8 +193,6 @@ def main():
     parser.add_argument('audio_path', help='Path to the translated audio file')
     parser.add_argument('timing_path', help='Path to the timing JSON file')
     parser.add_argument('output_path', help='Path for the output synchronized video')
-    parser.add_argument('--max-slowdown', type=float, default=2.0, 
-                        help='Maximum video slowdown factor (default: 2.0)')
     
     args = parser.parse_args()
     
@@ -206,8 +201,7 @@ def main():
             args.video_path,
             args.audio_path,
             args.timing_path,
-            args.output_path,
-            args.max_slowdown
+            args.output_path
         )
         
         return 0 if success else 1
