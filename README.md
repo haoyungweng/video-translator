@@ -25,6 +25,14 @@ pip install -r requirements.txt
 
 # Make scripts executable (Linux/macOS)
 chmod +x *.py run.sh
+
+# Set up Wav2Lip
+git clone https://github.com/Rudrabha/Wav2Lip.git
+
+# Download the Wav2Lip model checkpoint from OneDrive
+# Visit this URL and download the model manually:
+# https://iiitaphyd-my.sharepoint.com/personal/radrabha_m_research_iiit_ac_in/_layouts/15/embed.aspx?UniqueId=b6edc8d8-8065-4c0a-aac5-68114517a4bb
+# Then place the downloaded file in Wav2Lip/checkpoints/wav2lip_gan.pth
 ```
 
 ## Usage
@@ -38,8 +46,8 @@ chmod +x *.py run.sh
 
 The workflow consists of these sequential steps:
 
-1. **Extract Audio**: `extract_audio.py` - Extract audio from original video
-2. **Translate Subtitles**: `translate_subtitles.py` - Convert English SRT to German
+1. **Translate Subtitles**: `translate_subtitles.py` - Convert English SRT to German
+2. **Extract Audio**: `extract_audio.py` - Extract audio from original video
 3. **Generate Audio**: `generate_audio.py` - Create German speech with voice cloning
 4. **Sync Video**: `sync_video.py` - Adjust video timing to match German audio
 5. **Extract Face**: `extract_face.py` - Isolate face region from video
@@ -52,8 +60,8 @@ Run each step individually for more control:
 
 ```bash
 # Example of running individual steps
-python extract_audio.py input_video.mp4 output/original_audio.wav
 python translate_subtitles.py input_subtitles.srt output/translated_subtitles.srt
+python extract_audio.py input_video.mp4 output/original_audio.wav
 python generate_audio.py output/original_audio.wav output/translated_subtitles.srt output/translated_audio.wav
 python sync_video.py input_video.mp4 output/translated_audio.wav output/translated_audio_timings.json output/translated_video.mp4
 python extract_face.py output/translated_video.mp4 output/face_video.mp4
