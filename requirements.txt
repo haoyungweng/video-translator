@@ -1,0 +1,27 @@
+# Core dependencies
+numpy>=1.20.0
+opencv-python>=4.5.0
+torch>=1.9.0
+torchaudio>=0.9.0
+ffmpeg-python>=0.2.0
+
+# Audio processing
+pydub>=0.25.1
+librosa>=0.8.0
+soundfile>=0.10.3
+
+# Text processing
+srt>=3.5.0
+deep-translator>=1.9.0  # Replaces googletrans which is often unstable
+
+# Machine learning
+TTS==0.22.0  # Specific version for compatibility
+mediapipe>=0.8.9  # For face detection
+
+# Utilities
+tqdm>=4.62.0
+argparse>=1.4.0
+requests>=2.25.0
+
+# Optional dependencies - uncomment if needed
+# sadtalker  # Uncomment if using SadTalker for face animation
