@@ -68,33 +68,33 @@ echo "Output directory: $OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Translate subtitles from English to German
-echo "1. Translating subtitles..."
+echo -e "\n1. Translating subtitles..."
 python translate_subtitles.py "$SUBTITLE_FILE" "$OUTPUT_DIR/translated-${SUBTITLE_NAME}.srt"
 
 # Extract audio from original video
-echo "2. Extracting audio..."
+echo -e "\n2. Extracting audio..."
 python extract_audio.py "$VIDEO_FILE" "$OUTPUT_DIR/original_audio.wav"
 
 # Generate German audio with voice cloning
-echo "3. Generating German audio with voice cloning..."
+echo -e "\n3. Generating German audio with voice cloning..."
 export COQUI_TOS_AGREED=1
 python generate_audio.py "$OUTPUT_DIR/original_audio.wav" "$OUTPUT_DIR/translated-${SUBTITLE_NAME}.srt" "$OUTPUT_DIR/translated_audio.wav" --temp_dir "$OUTPUT_DIR/audio_segments"
 
 # Sync video timing with the new audio
-echo "4. Synchronizing video timing..."
+echo -e "\n4. Synchronizing video timing..."
 python sync_video.py "$VIDEO_FILE" "$OUTPUT_DIR/translated_audio.wav" "$OUTPUT_DIR/translated_audio_timings.json" "$OUTPUT_DIR/translated_${VIDEO_NAME}.mp4"
 
 # Extract face region from video
-echo "5. Extracting face region..."
+echo -e "\n5. Extracting face region..."
 python extract_face.py "$OUTPUT_DIR/translated_${VIDEO_NAME}.mp4" "$OUTPUT_DIR/face_video.mp4" --coordinates_file "$OUTPUT_DIR/face_coordinates.txt"
 
 # Apply lip sync to the face video
-echo "6. Applying lip sync to face..."
+echo -e "\n6. Applying lip sync to face..."
 python lip_sync.py "$OUTPUT_DIR/face_video.mp4" "$OUTPUT_DIR/translated_audio.wav" "$OUTPUT_DIR/lip_synced_face.mp4"
 
 # Combine lip-synced face back into the full video
-echo "7. Combining final video..."
+echo -e "\n7. Combining final video..."
 python combine_video.py "$OUTPUT_DIR/translated_${VIDEO_NAME}.mp4" "$OUTPUT_DIR/lip_synced_face.mp4" "$OUTPUT_DIR/final_${VIDEO_NAME}.mp4" --audio "$OUTPUT_DIR/translated_audio.wav" --face_coordinates "$OUTPUT_DIR/face_coordinates.txt" --blend_width 5
 
-echo "Video translation completed successfully!"
+echo -e "\nVideo translation completed successfully!"
 echo "Final output: $OUTPUT_DIR/final_${VIDEO_NAME}.mp4"

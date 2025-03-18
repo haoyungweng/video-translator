@@ -15,6 +15,10 @@ from pydub import AudioSegment
 import subprocess
 import json
 
+# Set environment variables to suppress warnings
+os.environ["TOKENIZERS_PARALLELISM"] = "false"  # Suppress tokenizer parallelism warning
+os.environ["TORCH_LOAD_LEGACY_MODULES"] = "1"   # Allow old-style loading
+
 # For PyTorch 2.6+, monkey patch the torch.load function to use weights_only=False
 original_torch_load = torch.load
 def patched_torch_load(*args, **kwargs):
@@ -23,9 +27,6 @@ def patched_torch_load(*args, **kwargs):
     return original_torch_load(*args, **kwargs)
 
 torch.load = patched_torch_load
-
-# Set environment variable to allow old-style loading
-os.environ["TORCH_LOAD_LEGACY_MODULES"] = "1"
 
 def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_segments", 
                          timing_file=None, generate_timings=True):
@@ -65,9 +66,9 @@ def generate_german_audio(srt_path, speaker_wav, output_path, temp_dir="audio_se
                 print(f"Note: Could not add safe globals: {e}")
                 pass
         
-        # Load the XTTS model using the API
+        # Load the XTTS model using the API (with modern device handling)
         tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
-        tts.to(device)
+        tts.to(device)  # Move model to the appropriate device
         
         # Parse SRT file
         print("Parsing SRT file...")

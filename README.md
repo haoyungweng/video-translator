@@ -109,3 +109,7 @@ The pipeline generates several output files in the specified output directory:
 If you need just the translated video without lip synchronization (which is faster to generate), you can stop the pipeline after step 4.
 
 **Note about video timing:** The pipeline adjusts the speed of video segments to match the duration of the translated audio. German sentences are often longer than their English equivalents, which may result in slowed-down video sections. This is normal and necessary to maintain synchronization between the video and the translated audio.
+
+## Sample Output
+
+For reference, sample outputs from the pipeline are included in the `samples` directory. These files demonstrate the results of running the pipeline on the default input files. You can use these as a reference to understand what to expect from each stage of the translation process.

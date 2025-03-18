@@ -134,7 +134,7 @@ def run_lip_sync(face_video, audio_path, output_path):
             "--outfile", "temp_output.mp4",
             "--wav2lip_batch_size", "4",
             "--face_det_batch_size", "1",
-            "--pads", "0", "50", "0", "0",
+            "--pads", "0", "40", "0", "0",
             "--nosmooth"
         ]
         

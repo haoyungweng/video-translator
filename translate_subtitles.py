@@ -29,12 +29,17 @@ def translate_srt_file(input_path, output_path, source_lang="en", target_lang="d
             # Skip empty subtitles
             if not subtitle.content.strip():
                 continue
-                
+            
+            # Pre-process the content: replace line breaks with spaces
+            # This improves translation quality and prevents unwanted line breaks
+            original_content = subtitle.content
+            processed_content = original_content.replace('\n', ' ').strip()
+            
             # Translate text (with retry mechanism)
             max_retries = 3
             for attempt in range(max_retries):
                 try:
-                    translated_text = translator.translate(subtitle.content)
+                    translated_text = translator.translate(processed_content)
                     subtitle.content = translated_text
                     break
                 except Exception as e:
