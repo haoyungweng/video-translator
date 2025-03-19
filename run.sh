@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default values
-VIDEO_FILE="Tanzania-2.mp4"
+VIDEO_FILE="Tanzania.mp4"
 SUBTITLE_FILE="Tanzania-caption.srt"
 OUTPUT_DIR="out"
 
@@ -66,11 +66,10 @@ echo "Output directory: $OUTPUT_DIR"
 
 # Create output directory for all generated files
 mkdir -p "$OUTPUT_DIR"
-export CUDA_VISIBLE_DEVICES=2
 
 # Translate subtitles from English to German
 echo -e "\n1. Translating subtitles..."
-python translate_subtitles.py "$SUBTITLE_FILE" "$OUTPUT_DIR/translated-${SUBTITLE_NAME}.srt"
+python translate_subtitles.py "$SUBTITLE_FILE" "$OUTPUT_DIR/translated_${SUBTITLE_NAME}.srt"
 
 # Extract audio from original video
 echo -e "\n2. Extracting audio..."
@@ -79,7 +78,7 @@ python extract_audio.py "$VIDEO_FILE" "$OUTPUT_DIR/original_audio.wav"
 # Generate German audio with voice cloning
 echo -e "\n3. Generating German audio with voice cloning..."
 export COQUI_TOS_AGREED=1
-python generate_audio.py "$OUTPUT_DIR/original_audio.wav" "$OUTPUT_DIR/translated-${SUBTITLE_NAME}.srt" "$OUTPUT_DIR/translated_audio.wav" --temp_dir "$OUTPUT_DIR/audio_segments"
+python generate_audio.py "$OUTPUT_DIR/original_audio.wav" "$OUTPUT_DIR/translated_${SUBTITLE_NAME}.srt" "$OUTPUT_DIR/translated_audio.wav" --temp_dir "$OUTPUT_DIR/audio_segments"
 
 # Sync video timing with the new audio
 echo -e "\n4. Synchronizing video timing..."

@@ -41,7 +41,7 @@ def verify_wav2lip_installation():
         error_message = "\n".join(errors)
         error_message += "\n\nPlease follow these steps to fix the issues:"
         error_message += "\n1. Run: git clone https://github.com/Rudrabha/Wav2Lip.git"
-        error_message += "\n2. Download the model from: https://iiitaphyd-my.sharepoint.com/personal/radrabha_m_research_iiit_ac_in/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fradrabha%5Fm%5Fresearch%5Fiiit%5Fac%5Fin%2FDocuments%2FWav2Lip%5FModels%2Fwav2lip%5Fgan%2Epth"
+        error_message += "\n2. Download the model from: https://iiitaphyd-my.sharepoint.com/personal/radrabha_m_research_iiit_ac_in/_layouts/15/embed.aspx?UniqueId=b6edc8d8-8065-4c0a-aac5-68114517a4bb"
         error_message += f"\n3. Place the downloaded model at: {model_path}"
         return False, error_message
     
