@@ -66,6 +66,7 @@ echo "Output directory: $OUTPUT_DIR"
 
 # Create output directory for all generated files
 mkdir -p "$OUTPUT_DIR"
+export CUDA_VISIBLE_DEVICES=2
 
 # Translate subtitles from English to German
 echo -e "\n1. Translating subtitles..."

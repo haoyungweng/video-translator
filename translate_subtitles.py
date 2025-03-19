@@ -1,12 +1,47 @@
 """
 Translate SRT file from English to German using the srt library and deep_translator.
+Includes text preprocessing to improve TTS quality.
 """
 
 import argparse
 import srt
 import os
 import time
+import re
 from deep_translator import GoogleTranslator
+
+def preprocess_text_for_tts(text):
+    """
+    Preprocess text to make it more TTS-friendly.
+    
+    Args:
+        text: The input text
+        
+    Returns:
+        Preprocessed text optimized for TTS
+    """
+    # Replace em dashes with colons or spaces depending on context
+    processed = text.replace(' - ', ': ')  # Replace em dash with colon when surrounded by spaces
+    processed = processed.replace('- ', ': ')  # Replace em dash with colon at start of words
+
+    # Handle common patterns in German translations
+    processed = processed.replace(' -', ' ')  # Remove space-dash pattern like "Serengeti -Nationalpark"
+    
+    # Handle other dashes and hyphens
+    processed = processed.replace('—', ': ')  # Replace true em dash with colon and space
+    processed = processed.replace('–', ': ')  # Replace en dash with colon and space
+    
+    # Fix spaces
+    processed = re.sub(r'\s+', ' ', processed)  # Replace multiple spaces with a single space
+    processed = processed.strip()
+    
+    # Fix common punctuation issues
+    processed = processed.replace(' ,', ',')  # Remove space before comma
+    processed = processed.replace(' .', '.')  # Remove space before period
+    processed = processed.replace(' :', ':')  # Remove space before colon
+    processed = processed.replace(' ;', ';')  # Remove space before semicolon
+    
+    return processed
 
 def translate_srt_file(input_path, output_path, source_lang="en", target_lang="de"):
     """Translate SRT file from English to German using Google Translate via deep_translator."""
@@ -40,6 +75,10 @@ def translate_srt_file(input_path, output_path, source_lang="en", target_lang="d
             for attempt in range(max_retries):
                 try:
                     translated_text = translator.translate(processed_content)
+                    
+                    # Further post-process translated text to improve TTS quality
+                    translated_text = preprocess_text_for_tts(translated_text)
+                    
                     subtitle.content = translated_text
                     break
                 except Exception as e:
@@ -60,7 +99,7 @@ def translate_srt_file(input_path, output_path, source_lang="en", target_lang="d
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(srt.compose(subtitles))
         
-        print(f"Translated SRT saved to {output_path}")
+        print(f"Translated and preprocessed SRT saved to {output_path}")
         return True
         
     except Exception as e:
@@ -68,7 +107,7 @@ def translate_srt_file(input_path, output_path, source_lang="en", target_lang="d
         return False
 
 def main():
-    parser = argparse.ArgumentParser(description='Translate SRT file from English to German using Google Translate.')
+    parser = argparse.ArgumentParser(description='Translate SRT file from English to German and preprocess for TTS.')
     parser.add_argument('input_srt', help='Path to input SRT file')
     parser.add_argument('output_srt', help='Path for output translated SRT file')
     parser.add_argument('--source', default='en', help='Source language (default: en)')
