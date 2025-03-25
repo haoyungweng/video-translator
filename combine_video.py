@@ -182,9 +182,6 @@ def combine_videos(original_video, face_video, output_video, audio_path=None, fa
     # Get face region coordinates
     x, y, w, h = face_region
     
-    # Initialize color transfer reference
-    color_reference = None
-    
     # Process each frame
     frame_count = min(orig_frames, face_frames)
     

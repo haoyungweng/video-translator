@@ -23,7 +23,6 @@ def extract_face_region(input_video, output_video, coordinates_file=None, paddin
     # Initialize face detector
     mp_face_detection = mp.solutions.face_detection
     face_detection = mp_face_detection.FaceDetection(
-        model_selection=1,  # Use full range model
         min_detection_confidence=0.5
     )
     
